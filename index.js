@@ -1,34 +1,45 @@
-// Import required Node.js modules
-const http = require("http");
-const fs = require("fs");
-const url = require("url");
+  const express = require("express");
+  const app = express();
+  const user = require("./MOCK_DATA.json");
+  const port = 8000;
 
-// Create an HTTP server using the http module
-const myServer = http.createServer((req, res) => {
-    // Ignore requests for "/favicon.ico"
-    if (req.url === "/favicon.ico") {
-        res.end();
-        return;
+  // HTML route to display a list of users
+  app.get("/user", (req, res) => {
+    const html = `
+      <ul>
+      ${user.map((user) => `<li>${user.first_name}</li>`).join("")}
+      </ul>
+      `;
+    res.send(html);
+  });
+
+  // REST API route to get all users
+  app.get("/api/user", (req, res) => {
+    return res.json(user);
+  });
+  //TODO: create new user
+  app.post("/api/user", (req, res) => {
+    return res.json({ status: "pending" });
+  });
+  //TODO: edit the user with id
+  app.patch("/api/user/:id", (req, res) => {
+    return res.json({ status: "pending" });
+  });
+app.delete("api/user/:id",(req,res)=>{
+  return res.json({status: "pending"})
+})
+  // REST API route to get a specific user by ID
+  app.get("/api/user/:id", (req, res) => {
+    const id = Number(req.params.id);
+    const foundUser = user.find((user) => user.id === id);
+
+    if (foundUser) {
+      return res.json(foundUser);
+    } else {
+      return res.status(404).json({ error: "User not found" });
     }
+  });
 
-    // Generate a log entry for each incoming request
-    const log = `${Date.now()}: ${req.url} - New Request Received :\n`;
-    const MYUrl = url.parse(req.url);
-    console.log(MYUrl);
-    // Append the log entry to a log file
-    fs.appendFile("log.txt", log, (err) => {
-        if (err) {
-            console.error("Error writing to log file:", err);
-        } else {
-            console.log("Log entry added to log.txt");
-        }
-
-        // Send a response to the client
-        res.end("hello from server Again");
-    });
-});
-
-// Start the server and make it listen on port 8000
-myServer.listen(8000, () => {
-    console.log("Server Started! Listening on port 8000.");
-});
+  app.listen(port, () => {
+    console.log(`SERVER IS LISTENING AT ${port}`);
+  });
